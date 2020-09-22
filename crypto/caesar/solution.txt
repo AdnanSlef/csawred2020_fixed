@@ -1,0 +1,6 @@
+reference: https://masterpessimistaa.wordpress.com/2016/11/22/rc3-ctf-writeup-saladcrypto-100/
+Use contents of challenge.txt as plaintext in cryptii.com/pipes/caesar-cipher
+use alphabet a-z0-9
+discover message:
+Congratulations, you remain the king in the north. progress to the next challenge using
+flag{0lly_1s_th3_W3st3rosi_Brutu5}

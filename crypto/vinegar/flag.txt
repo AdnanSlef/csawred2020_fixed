@@ -1,0 +1,3 @@
+Decrypt using guballa.de/vigenere-solver
+
+Apple cider vinegar is mostly apple juice, but adding yeast turns the sugar in the juice into alcohol. This is a process called fermentation. Bacteria turn the alcohol into acetic acid. That’s what gives vinegar its sour taste and strong smell. Hey you know which cipher sounds like vinegar? Vigenere! Here's your flag: flag{V1g3n3re_C1ph3r}
