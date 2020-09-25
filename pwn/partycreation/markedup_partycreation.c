@@ -23,6 +23,7 @@ typedef struct _character{      //24 bytes = sizeof(character)
 
 character party[PARTYSIZE]; //6 characters = 144 bytes
 
+//replaces first newline will null / null-terminates after 15 chars
 void getInput(int length, char * buffer){
     memset(buffer, 0, length);
     int count = 0;

