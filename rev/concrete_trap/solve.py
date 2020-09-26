@@ -14,7 +14,7 @@ def solve1():
     ]
     return b''.join(i.to_bytes(8,'little')for i in passcode).replace(b'\0',b'')
 
-def solve2():
+def solve2_take1():
     A = BitVec('a',32)
     b = 50
     assert b >= 0x32
@@ -42,6 +42,9 @@ def solve2():
     a = slvr.model()[A] #replace with computed a
     return str(a)+' '+str(b)
 
+def solve2_take2():
+    pass
+
 def brute2(d):
     def check(a,b):
         u32 = 0xffffffff
@@ -61,7 +64,7 @@ def brute2(d):
 #brute2(500)
 
 sol1 = solve1()
-sol2 = solve2()
+sol2 = solve2_take1()
 
 conn = remote('rev.red.csaw.io',5002)
 
