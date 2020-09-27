@@ -2,7 +2,6 @@
 
 from pwn import *
 from Crypto.Hash import MD5
-from struct import pack
 
 prefix = b"Hi, my name is Jangui. My card is my passport. Please verify me."
 
