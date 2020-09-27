@@ -56,20 +56,23 @@ def free(index):
     print(str(index).encode()+b'\n')
     conn.sendline(str(index).encode())
 
-def editfriend(index, newname, newage):
+def edit(index, newname_or_newbarcode, newage):
+    if isinstance(newname_or_newbarcode,int):
+        newname_or_newbarcode = str(newname_or_newbarcode).encode()
+    else:
+        assert len(newname_or_newbarcode) < 64
     print(conn.recvuntil(b'> ').decode())
     print(b'4\n')
     conn.sendline(b'4')
     print(conn.recvuntil(b'?\n'))
-    #set index
-    #if friend_type[index] != 0:
-        #set char[63] name via fgets; send all 63 or use \n which will not be replaced but \0 will be tacked on
-    #else:
-        #set int64 id
-    #set int age
-
-def editrobot(index, newbarcode, newage):
-    pass
+    print(str(index).encode()+b'\n')
+    conn.sendline(str(index).encode())
+    print(conn.recvuntil(b'?\n'))
+    print(newname_or_newbarcode+b'\n')
+    conn.sendline(newname_or_newbarcode)
+    print(conn.recvuntil(b'?\n'))
+    print(str(newage).encode()+b'\n')
+    conn.sendline(str(newage).encode())
 
 def display(index):
     print(conn.recvuntil(b'> ').decode())
@@ -102,6 +105,10 @@ addfriend(b'11',b'freddy',123)
 addrobot(1234567,80)
 display(0)
 display(1)
+edit(1, 987654, 90)
+display(1)
+edit(0, b'mercury', 321)
+display(0)
 free(1)
 display(1)
 
