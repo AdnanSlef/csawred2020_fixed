@@ -34,7 +34,7 @@ void add_friend()
     char *name = malloc(sizeof(char) * NAME_LENGTH);
 
     puts("Is your friend organic and of flesh?");
-    scanf("%d", &human_name);
+    scanf("%d", &human_name); //weird behavior
 
     if (human_name != 0)
     {
